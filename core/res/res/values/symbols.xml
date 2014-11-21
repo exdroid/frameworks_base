@@ -1424,6 +1424,8 @@
   <java-symbol type="array" name="config_longPressVibePattern" />
   <java-symbol type="array" name="config_safeModeDisabledVibePattern" />
   <java-symbol type="array" name="config_safeModeEnabledVibePattern" />
+  <java-symbol type="array" name="shutdown_reboot_actions" />
+  <java-symbol type="array" name="shutdown_reboot_options" />
   <java-symbol type="array" name="config_virtualKeyVibePattern" />
   <java-symbol type="attr" name="actionModePopupWindowStyle" />
   <java-symbol type="attr" name="dialogCustomTitleDecorLayout" />
@@ -1531,6 +1533,8 @@
   <java-symbol type="string" name="global_action_silent_mode_on_status" />
   <java-symbol type="string" name="global_action_toggle_silent_mode" />
   <java-symbol type="string" name="global_action_lockdown" />
+  <java-symbol type="string" name="reboot_progress" />
+  <java-symbol type="string" name="reboot_system" />
   <java-symbol type="string" name="invalidPuk" />
   <java-symbol type="string" name="lockscreen_carrier_default" />
   <java-symbol type="style" name="Animation.LockScreen" />
