@@ -280,6 +280,13 @@ interface ITelephony {
     boolean handlePinMmiForSubscriber(int subId, String dialString);
 
     /**
+     * Toggle between LTE/3G/2G
+     * @param networkState {RILConstants.NETWORK_MODE}
+     * {@hide}
+     */
+    void toggleMobileNetwork(int networkState);
+
+    /**
      * Toggles the radio on or off.
      */
     void toggleRadioOnOff();
@@ -520,6 +527,11 @@ interface ITelephony {
      * or {@link PHone#LTE_ON_CDMA_TRUE}
      */
     int getLteOnCdmaModeForSubscriber(int subId, String callingPackage);
+
+    /**
+     * Return true if current radio is LTE on GSM
+     */
+    int getLteOnGsmMode();
 
     /**
      * Returns the all observed cell information of the device.

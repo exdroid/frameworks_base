@@ -19,17 +19,27 @@ package com.android.systemui.qs.tiles;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.os.SystemProperties;
+import android.provider.Settings;
+import android.telephony.TelephonyManager;
 import android.util.AttributeSet;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.android.internal.telephony.Phone;
+import com.android.internal.util.xdroid.DeviceUtils;
 import com.android.systemui.FontSizeUtils;
 import com.android.systemui.R;
 import com.android.systemui.qs.DataUsageGraph;
 import com.android.systemui.statusbar.policy.NetworkController;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Layout for the data usage detail in quick settings.
@@ -39,6 +49,10 @@ public class DataUsageDetailView extends LinearLayout {
     private static final double KB = 1024;
     private static final double MB = 1024 * KB;
     private static final double GB = 1024 * MB;
+    private static final int NETWORK_2G = 0;
+    private static final int NETWORK_3G = 1;
+    private static final int NETWORK_2G3G = 2;
+    private static final int NETWORK_LTE = 3;
 
     private final DecimalFormat FORMAT = new DecimalFormat("#.##");
 
@@ -57,6 +71,8 @@ public class DataUsageDetailView extends LinearLayout {
                 R.dimen.qs_data_usage_text_size);
         FontSizeUtils.updateFontSize(this, R.id.usage_period_text, R.dimen.qs_data_usage_text_size);
         FontSizeUtils.updateFontSize(this, R.id.usage_info_bottom_text,
+                R.dimen.qs_data_usage_text_size);
+        FontSizeUtils.updateFontSize(this, R.id.mobile_network_text,
                 R.dimen.qs_data_usage_text_size);
     }
 
@@ -109,6 +125,31 @@ public class DataUsageDetailView extends LinearLayout {
         final TextView infoBottom = (TextView) findViewById(R.id.usage_info_bottom_text);
         infoBottom.setVisibility(bottom != null ? View.VISIBLE : View.GONE);
         infoBottom.setText(bottom);
+        final TextView networkMode = (TextView) findViewById(R.id.mobile_network_text);
+        networkMode.setText(R.string.qs_network_mode);
+
+        Spinner mNetTypeList = (Spinner) findViewById(R.id.mobile_network_type);
+        ArrayList<String> mNetTypeArray = 
+              new ArrayList<String>(Arrays.asList(res.getStringArray(R.array.mobile_network_type)));
+        if(!deviceSupportsLTE())
+            mNetTypeArray.remove("LTE");
+        ArrayAdapter<String> mNetTypeAdapter = new ArrayAdapter<String>(mContext,
+                                     android.R.layout.simple_list_item_1, mNetTypeArray);
+        mNetTypeList.setAdapter(mNetTypeAdapter);
+        mNetTypeList.setOnItemSelectedListener(null);
+        mNetTypeList.setSelection(getSelectedNetwork());
+        mNetTypeList.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parentView, View selectedItemView,
+                                                                         int position, long id) {
+                setSelectedNetwork(position);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parentView) {                
+            }
+        });
+        
     }
 
     private String formatBytes(long bytes) {
@@ -126,5 +167,82 @@ public class DataUsageDetailView extends LinearLayout {
             suffix = "KB";
         }
         return FORMAT.format(val * (bytes < 0 ? -1 : 1)) + " " + suffix;
+    }
+
+    boolean deviceSupportsLTE() {
+        return DeviceUtils.deviceSupportsLte(mContext);
+    }
+
+    public int getCurrentPreferredNetworkMode(Context context) {
+        int network = Settings.Global.getInt(context.getContentResolver(),
+                    Settings.Global.PREFERRED_NETWORK_MODE, -1);
+        return network;
+    }
+
+    public void setSelectedNetwork(int pos) {
+        TelephonyManager tm = (TelephonyManager)
+            mContext.getSystemService(Context.TELEPHONY_SERVICE);
+        boolean usesQcLte = SystemProperties.getBoolean(
+                        "ro.config.qc_lte_network_modes", false);
+        int curNetwork = getCurrentPreferredNetworkMode(mContext);
+        switch(curNetwork) {
+            //GSM Modes            
+            case Phone.NT_MODE_LTE_WCDMA:
+            case Phone.NT_MODE_LTE_GSM_WCDMA:
+            case Phone.NT_MODE_LTE_ONLY:
+            case Phone.NT_MODE_GSM_ONLY:
+            case Phone.NT_MODE_WCDMA_ONLY:
+            case Phone.NT_MODE_WCDMA_PREF:
+            case Phone.NT_MODE_GSM_UMTS:
+                switch(pos) {
+                    case NETWORK_2G : tm.toggleMobileNetwork(Phone.NT_MODE_GSM_ONLY); break;
+                    case NETWORK_3G : tm.toggleMobileNetwork(Phone.NT_MODE_WCDMA_ONLY); break;
+                    case NETWORK_2G3G : tm.toggleMobileNetwork(Phone.NT_MODE_WCDMA_PREF); break;
+                    case NETWORK_LTE : if (deviceSupportsLTE()) {
+                                 if (usesQcLte)
+                                     tm.toggleMobileNetwork(Phone.NT_MODE_LTE_CDMA_AND_EVDO);
+                                 else
+                                     tm.toggleMobileNetwork(Phone.NT_MODE_LTE_GSM_WCDMA);
+                             }
+                             break;
+                }
+                break;
+            //CDMA Modes
+            case Phone.NT_MODE_GLOBAL:
+            case Phone.NT_MODE_LTE_CDMA_AND_EVDO:
+            case Phone.NT_MODE_EVDO_NO_CDMA:
+            case Phone.NT_MODE_CDMA_NO_EVDO:
+            case Phone.NT_MODE_CDMA:
+                switch(pos) {
+                    case NETWORK_2G : tm.toggleMobileNetwork(Phone.NT_MODE_CDMA_NO_EVDO); break;
+                    case NETWORK_3G : tm.toggleMobileNetwork(Phone.NT_MODE_EVDO_NO_CDMA); break;
+                    case NETWORK_2G3G : tm.toggleMobileNetwork(Phone.NT_MODE_CDMA); break;
+                    case NETWORK_LTE : tm.toggleMobileNetwork(Phone.NT_MODE_LTE_CDMA_AND_EVDO); break;
+                }
+                break;
+        }
+    }
+
+    public int getSelectedNetwork() {
+        int curNetwork = getCurrentPreferredNetworkMode(mContext);
+        switch(curNetwork) {
+            case Phone.NT_MODE_GSM_ONLY:
+            case Phone.NT_MODE_CDMA_NO_EVDO:
+                return NETWORK_2G;
+            case Phone.NT_MODE_WCDMA_ONLY:
+            case Phone.NT_MODE_EVDO_NO_CDMA:
+                return NETWORK_3G;
+            case Phone.NT_MODE_WCDMA_PREF:
+            case Phone.NT_MODE_CDMA:
+                return NETWORK_2G3G;
+            case Phone.NT_MODE_LTE_WCDMA:
+            case Phone.NT_MODE_LTE_GSM_WCDMA:
+            case Phone.NT_MODE_LTE_ONLY:
+            case Phone.NT_MODE_LTE_CDMA_AND_EVDO:
+                return NETWORK_LTE;
+
+            default: setSelectedNetwork(NETWORK_2G3G);
+                return NETWORK_2G3G;
+        }
     }
 }
