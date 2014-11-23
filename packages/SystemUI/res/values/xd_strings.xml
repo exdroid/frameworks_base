@@ -19,4 +19,7 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <!--ScreenShot Trash-->
     <string name="screenshot_delete_confirmation">Screenshot deleted</string>
+
+    <!-- QS Mobile Network Type-->
+    <string name="qs_network_mode">Network Mode : </string>
 </resources>

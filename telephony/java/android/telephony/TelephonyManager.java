@@ -961,6 +961,17 @@ public class TelephonyManager {
     }
 
     /**
+     * {@hide}
+     */
+    public void toggleMobileNetwork(int networkState) {
+        try {
+            getITelephony().toggleMobileNetwork(networkState);
+        } catch (RemoteException e) {
+            // Silently fail
+        }
+    }
+
+    /**
      * The contents of the /proc/cmdline file
      */
     private static String getProcCmdLine()
@@ -1035,6 +1046,14 @@ public class TelephonyManager {
                 " product_type='" + productType +
                 "' lteOnCdmaProductType='" + sLteOnCdmaProductType + "'");
         return retVal;
+    }
+
+    /**
+     * Return if the current radio is LTE on GSM
+     * @hide
+     */
+    public static int getLteOnGsmModeStatic() {
+        return SystemProperties.getInt(TelephonyProperties.PROPERTY_LTE_ON_GSM_DEVICE, 0);
     }
 
     //
@@ -1779,6 +1798,21 @@ public class TelephonyManager {
         } catch (NullPointerException ex) {
             // This could happen before phone restarts due to crashing
             return PhoneConstants.LTE_ON_CDMA_UNKNOWN;
+        }
+    }
+
+    /**
+     * Return if the current radio is LTE on GSM
+     * @hide
+     */
+    public int getLteOnGsmMode() {
+        try {
+            return getITelephony().getLteOnGsmMode();
+        } catch (RemoteException ex) {
+            return 0;
+        } catch (NullPointerException ex) {
+            // This could happen before phone restarts due to crashing
+            return 0;
         }
     }
 
