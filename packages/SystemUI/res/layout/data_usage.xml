@@ -87,7 +87,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="@style/TextAppearance.QS.DataUsage"
-        android:layout_marginTop="10dp" />
+        android:layout_marginTop="15dp" />
 
     <Spinner
         android:id="@+id/mobile_network_type"
