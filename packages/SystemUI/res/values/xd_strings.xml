@@ -21,5 +21,5 @@
     <string name="screenshot_delete_confirmation">Screenshot deleted</string>
 
     <!-- QS Mobile Network Type-->
-    <string name="qs_network_mode">Network Mode : </string>
+    <string name="qs_network_mode">Network Mode</string>
 </resources>
