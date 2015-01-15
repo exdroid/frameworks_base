@@ -1842,6 +1842,8 @@
         <item>reboot</item>
         <item>bugreport</item>
         <item>users</item>
+        <item>airplane</item>
+        <item>silent</item>
     </string-array>
 
     <!-- default telephony hardware configuration for this platform.
