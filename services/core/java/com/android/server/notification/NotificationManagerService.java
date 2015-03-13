@@ -2842,7 +2842,9 @@ public class NotificationManagerService extends SystemService {
                     ledNotification = null;
                     break;
                 }
-                if (r.sbn.getScore() > ledNotification.sbn.getScore()) {
+                else if(ledNotification == null)
+                    ledNotification = r;
+                else if (r.sbn.getScore() > ledNotification.sbn.getScore()) {
                     ledNotification = r;
                 }
             }
