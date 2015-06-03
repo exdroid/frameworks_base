@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+
+    <!-- Enable the Advanced Location tile in QuickSettings -->
+    <bool name="config_qs_advancedlocation">true</bool>
+
+</resources>
