@@ -16,7 +16,9 @@
 
 package com.android.systemui.qs.tiles;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.SystemProperties;
@@ -56,8 +58,8 @@ public class DataUsageDetailView extends LinearLayout {
 
     private final DecimalFormat FORMAT = new DecimalFormat("#.##");
 
-    public DataUsageDetailView(Context context, AttributeSet attrs) {
-        super(context, attrs);
+    public DataUsageDetailView(Context mContext, AttributeSet attrs) {
+        super(mContext, attrs);
     }
 
     @Override
@@ -172,8 +174,8 @@ public class DataUsageDetailView extends LinearLayout {
         return DeviceUtils.deviceSupportsLte(mContext);
     }
 
-    public int getCurrentPreferredNetworkMode(Context context) {
-        int network = Settings.Global.getInt(context.getContentResolver(),
+    public int getCurrentPreferredNetworkMode(Context mContext) {
+        int network = Settings.Global.getInt(mContext.getContentResolver(),
                     Settings.Global.PREFERRED_NETWORK_MODE, -1);
         return network;
     }
