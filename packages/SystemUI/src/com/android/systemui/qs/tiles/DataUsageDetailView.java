@@ -136,6 +136,7 @@ public class DataUsageDetailView extends LinearLayout {
         ArrayAdapter<String> mNetTypeAdapter = new ArrayAdapter<String>(mContext,
                                      android.R.layout.simple_list_item_1, mNetTypeArray);
         mNetTypeList.setAdapter(mNetTypeAdapter);
+        mNetTypeList.setSelection(getSelectedNetwork());
         mNetTypeList.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView,
@@ -147,7 +148,6 @@ public class DataUsageDetailView extends LinearLayout {
             public void onNothingSelected(AdapterView<?> parentView) {                
             }
         });
-        mNetTypeList.setSelection(getSelectedNetwork());
         
     }
 
