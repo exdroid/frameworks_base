@@ -21,16 +21,4 @@
     <!-- QS Mobile Network Type-->
     <string name="qs_network_mode">Network Mode</string>
 
-    <!-- [CHAR LIMIT=30] QS Location detail titles -->
-    <string name="quick_settings_location_detail_title">Location</string>
-    <string name="quick_settings_location_mode_title">Location mode</string>
-    <string name="quick_settings_location_mode_high_accuracy_title">High accuracy</string>
-    <string name="quick_settings_location_mode_battery_saving_title">Battery saving</string>
-    <string name="quick_settings_location_mode_sensors_only_title">Device only</string>
-
-    <!-- [CHAR LIMIT=130] Location mode descriptions -->
-    <string name="quick_settings_location_mode_high_accuracy_description">Use GPS, Wi\u2011Fi, and cellular networks</string>
-    <string name="quick_settings_location_mode_battery_saving_description">Use only Wi\u2011Fi and cellular networks</string>
-    <string name="quick_settings_location_mode_sensors_only_description">Use only GPS</string>
-
 </resources>

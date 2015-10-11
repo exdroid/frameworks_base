@@ -17,7 +17,6 @@
 package com.android.systemui.qs.tiles;
 
 import com.android.internal.logging.MetricsLogger;
-
 import com.android.systemui.R;
 import com.android.systemui.qs.QSTile;
 import com.android.systemui.statusbar.policy.KeyguardMonitor;
@@ -26,8 +25,6 @@ import com.android.systemui.statusbar.policy.LocationController.LocationSettings
 
 /** Quick settings tile: Location **/
 public class LocationTile extends QSTile<QSTile.BooleanState> {
-    private static final Intent LOCATION_SETTINGS = new Intent().setComponent(new ComponentName(
-            "com.android.settings", "com.android.settings.Settings$LocationSettingsActivity"));
 
     private final AnimationIcon mEnable =
             new AnimationIcon(R.drawable.ic_signal_location_enable_animation);
@@ -36,26 +33,17 @@ public class LocationTile extends QSTile<QSTile.BooleanState> {
 
     private final LocationController mController;
     private final KeyguardMonitor mKeyguard;
-    private final Callback mCallback;
-    private final LocationDetailAdapter mDetailAdapter;
-    private LocationDetailView ldView;
-    
+    private final Callback mCallback = new Callback();
+
     public LocationTile(Host host) {
         super(host);
         mController = host.getLocationController();
-        mKeyguard = host.getKeyguardMonitor();        
-        mDetailAdapter = new LocationDetailAdapter();
-        mCallback = new Callback();
+        mKeyguard = host.getKeyguardMonitor();
     }
 
     @Override
     protected BooleanState newTileState() {
         return new BooleanState();
-    }
-
-    @Override
-    public DetailAdapter getDetailAdapter() {
-        return mDetailAdapter;
     }
 
     @Override
@@ -71,18 +59,23 @@ public class LocationTile extends QSTile<QSTile.BooleanState> {
 
     @Override
     protected void handleClick() {
+        final boolean wasEnabled = (Boolean) mState.value;
+        MetricsLogger.action(mContext, getMetricsCategory(), !wasEnabled);
+        mController.setLocationEnabled(!wasEnabled);
         mEnable.setAllowAnimation(true);
         mDisable.setAllowAnimation(true);
-        showDetail(true);
     }
 
     @Override
     protected void handleUpdateState(BooleanState state, Object arg) {
+        final boolean locationEnabled =  mController.isLocationEnabled();
+
         // Work around for bug 15916487: don't show location tile on top of lock screen. After the
         // bug is fixed, this should be reverted to only hiding it on secure lock screens:
-        state.visible = !(mKeyguard.isSecure() && mKeyguard.isShowing());
-        state.value = mController.isLocationEnabled();
-        if (mController.isLocationEnabled()) {
+        // state.visible = !(mKeyguard.isSecure() && mKeyguard.isShowing());
+        state.visible = !mKeyguard.isShowing();
+        state.value = locationEnabled;
+        if (locationEnabled) {
             state.icon = mEnable;
             state.label = mContext.getString(R.string.quick_settings_location_label);
             state.contentDescription = mContext.getString(
@@ -113,11 +106,6 @@ public class LocationTile extends QSTile<QSTile.BooleanState> {
             KeyguardMonitor.Callback {
         @Override
         public void onLocationSettingsChanged(boolean enabled) {
-            try {
-                ldView.refreshView();
-            } catch(NullPointerException e) {
-                //silently fail so that no one finds out about this dirty hack :(
-            }
             refreshState();
         }
 
@@ -125,44 +113,5 @@ public class LocationTile extends QSTile<QSTile.BooleanState> {
         public void onKeyguardChanged() {
             refreshState();
         }
-    };    
-
-    private final class LocationDetailAdapter implements DetailAdapter {
-
-        @Override
-        public int getTitle() {
-            return R.string.quick_settings_location_detail_title;
-        }
-
-        @Override
-        public Boolean getToggleState() {
-            return mController.isLocationEnabled();
-        }
-
-        @Override
-        public Intent getSettingsIntent() {
-            return LOCATION_SETTINGS;
-        }
-
-        @Override
-        public void setToggleState(boolean state) {
-            final boolean wasEnabled = (Boolean) mState.value;
-            MetricsLogger.action(mContext, getMetricsCategory(), state);
-            mController.setLocationEnabled(state);
-            setSwitch(state);
-        }
-
-        @Override
-        public View createDetailView(Context context, View convertView, ViewGroup parent) {
-            final LocationDetailView v = (LocationDetailView) (convertView != null ? convertView
-                    : LayoutInflater.from(mContext).inflate(R.layout.location_mode, parent, false));
-            ldView = v; // *DIRTY HACK ALERT*
-            v.bind();
-            return v;
-        }
-
-        public void setSwitch(boolean enabled) {
-            fireToggleStateChanged(enabled);
-        }
-    }
+    };
 }
